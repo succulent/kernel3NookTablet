@@ -470,7 +470,7 @@ static inline int omap_rproc_start(struct rproc *rproc, u64 bootaddr)
 		/* GPT 9 & 11 (ipu); GPT 6 (dsp) are used as watchdog timers */
 		if ((!strcmp(rproc->name, "dsp") && timers[i].id == 6) ||
 		    (!strcmp(rproc->name, "ipu") &&
-#ifdef CONFIG_MACH_OMAP_ACCLAIM
+#ifdef CONFIG_MACH_OMAP4_NOOKTABLET
 				(timers[i].id == 9 || timers[i].id == 10))) {
 #else
 				(timers[i].id == 9 || timers[i].id == 11))) {
