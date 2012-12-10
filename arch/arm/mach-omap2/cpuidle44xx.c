@@ -35,6 +35,12 @@
 
 #ifdef CONFIG_CPU_IDLE
 
+#ifdef CONFIG_OMAP_ALLOW_OSWR
+#define CPU_IDLE_ALLOW_OSWR	1
+#else
+#define CPU_IDLE_ALLOW_OSWR	0
+#endif
+
 /* C1 is a single-cpu C-state, it can be entered by each cpu independently */
 /* C1 - CPUx WFI + MPU ON + CORE ON */
 #define OMAP4_STATE_C1		0
@@ -112,17 +118,30 @@ static struct clockdomain *cpu1_cd;
 
 static struct cpuidle_params cpuidle_params_table[] = {
 	/* C1 - CPUx WFI + MPU ON  + CORE ON */
-	{.exit_latency = 2 + 2,	.target_residency = 4, .valid = 1},
+	{
+		.exit_latency = 4,	
+		.target_residency = 4, 
+		.valid = 1,
+	},
 	/* C2 - CPU0 INA + CPU1 INA + MPU INA  + CORE INA */
-	{.exit_latency = 300, .target_residency = 300, .valid = 1},
+	{
+		.exit_latency = 300, 
+		.target_residency = 300, 
+		.valid = 1,
+	},
 	/* C3 - CPU0 OFF + CPU1 OFF + MPU CSWR + CORE CSWR */
-	{.exit_latency = 1000, .target_residency = 10000, .valid = 1},
-#ifdef CONFIG_OMAP_ALLOW_OSWR
+	{
+		.exit_latency = 5000, 
+		.target_residency = 10000, 
+		.valid = 1,
+	},
 	/* C4 - CPU0 OFF + CPU1 OFF + MPU CSWR + CORE OSWR */
-	{.exit_latency = 1200, .target_residency = 35000, .valid = 1},
-#else
-	{.exit_latency = 1200, .target_residency = 35000, .valid = 0},
-#endif
+
+	{
+		.exit_latency = 5200, 
+		.target_residency = 35000, 
+		.valid = CPU_IDLE_ALLOW_OSWR,
+	},
 };
 
 static void omap4_update_actual_state(struct cpuidle_device *dev,
@@ -749,4 +768,5 @@ int __init omap4_idle_init(void)
 	return 0;
 }
 #endif /* CONFIG_CPU_IDLE */
+
 
