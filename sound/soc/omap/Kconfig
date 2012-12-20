@@ -26,6 +26,12 @@ config SND_OMAP_SOC_DMIC
 config SND_OMAP_SOC_HDMI
 	tristate
 
+config ABE_44100
+	tristate
+
+config SND_OMAP_SOC_VXREC
+	tristate
+
 config SND_OMAP_SOC_N810
 	tristate "SoC Audio support for Nokia N810"
 	depends on SND_OMAP_SOC && MACH_NOKIA_N810 && I2C
@@ -109,29 +115,51 @@ config SND_OMAP_SOC_SDP3430
 	  SDP3430.
 
 config SND_OMAP_SOC_SDP4430
-	tristate "SoC Audio support for Texas Instruments SDP4430 or PandaBoard"
-	depends on TWL4030_CORE && (MACH_OMAP_4430SDP || MACH_OMAP4_PANDA)
+	tristate "SoC Audio support for Texas Instruments SDP4430, PandaBoard, Ovation and Hummingbird"
+	depends on TWL4030_CORE && (MACH_OMAP_4430SDP || MACH_OMAP4_PANDA || MACH_OMAP_OVATION || MACH_OMAP_HUMMINGBIRD)
 	select SND_OMAP_SOC
+	select SND_OMAP_SOC_MCPDM
+	select SND_SOC_TWL6040
 	select SND_OMAP_SOC_ABE
 	select SND_OMAP_SOC_MCBSP
 	select SND_SOC_DMIC
 	select SND_OMAP_SOC_DMIC
 	select SND_OMAP_SOC_ABE_DSP
+	select SND_OMAP_SOC_VXREC
+	select CDC_TCXO if (MACH_OMAP_4430SDP || MACH_OMAP4_TABLET)
 	help
 	  Say Y if you want to add support for SoC audio on Texas Instruments
 	  SDP4430 or PandaBoard.
+
+config SND_OMAP_SOC_LINEOUT_AUDIO
+	tristate "Line-Out audio support for BN Ovation and Hummingbird platforms"
+	depends on SND_OMAP_SOC_SDP4430 && (MACH_OMAP_OVATION || MACH_OMAP_HUMMINGBIRD)
+	help
+	  Say Y if you want to add support for line-out audio on Barnes and Noble devices.
+
+config SND_OMAP_SOC_ACCLAIM
+	tristate "SoC Audio support for OMAP4 Panda-AIC board with AIC3100"
+	depends on SND_OMAP_SOC
+	select SND_OMAP_SOC_MCBSP
+	select SND_SOC_TLV320AIC3100
+	select SND_SOC_OMAP4_AIC3100
+	select SND_OMAP_SOC_ABE
+	select SND_OMAP_SOC_ABE_DSP
+    select ABE_44100
+	help
+	  Say Y if you want to add support for SoC audio on the OMAP4 Panda board. Uses MCBSP2.
 
 config SND_OMAP_SOC_RY_AIC3110
 	tristate "SoC Audio support for OMAP4 and AIC3110 Audio Codec Chipset"
 	depends on SND_OMAP_SOC
 	select SND_OMAP_SOC_MCBSP
 	select SND_SOC_AIC3110
+	#select SND_SOC_TLV320AIC3100
 	select SND_OMAP_SOC_ABE
 	select SND_OMAP_SOC_ABE_DSP
 	select ABE_44100
 	help
 	Say Y if you want to add support for SoC audio on the OMAP4 Board
-
 
 config SND_OMAP_SOC_OMAP4_HDMI
 	tristate "SoC Audio support for Texas Instruments OMAP4 HDMI"

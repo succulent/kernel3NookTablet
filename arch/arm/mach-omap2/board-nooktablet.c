@@ -522,11 +522,6 @@ static struct platform_device acclaim_keys_gpio = {
 	},
 };
 
-static struct platform_device acclaim_aic3110 = {
-        .name = "tlv320aic3110-codec",
-        .id = -1,
-};
-
 /*******************************************************/
 static struct regulator_consumer_supply acclaim_lcd_supply[] = {
 	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dss"),
@@ -564,7 +559,6 @@ static struct platform_device acclaim_lcd_regulator = {
 
 /***************************************************************/
 static struct platform_device *acclaim_devices[] __initdata = {
-	&acclaim_aic3110,
 	&acclaim_keys_gpio,
 	&acclaim_lcd_regulator,
 };
@@ -932,6 +926,13 @@ static struct i2c_board_info __initdata acclaim_i2c_2_boardinfo[] = {
 	},
 };
 
+static struct i2c_board_info __initdata acclaim_i2c_3_boardinfo[] = {
+	{
+		I2C_BOARD_INFO("tlv320aic31xx-codec", 0x18),
+	}
+
+};
+
 static void __init show_acclaim_board_revision(int revision)
 {
 	switch (revision) {
@@ -1010,6 +1011,7 @@ static int __init acclaim_i2c_init(void)
 	err = i2c_register_board_info(1,
 				      acclaim_i2c_1_boardinfo, 
 				      ARRAY_SIZE(acclaim_i2c_1_boardinfo));
+	i2c_register_board_info(2, acclaim_i2c_3_boardinfo, ARRAY_SIZE(acclaim_i2c_3_boardinfo));
 	if (err)
 		return err;
 
