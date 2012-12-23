@@ -91,38 +91,38 @@ pvrsrvkm-y += \
 endif
 
 ifneq ($(W),1)
-CFLAGS_osfunc.o := -Werror
-CFLAGS_mutils.o := -Werror
-CFLAGS_mmap.o := -Werror
-CFLAGS_module.o := -Werror
-CFLAGS_pdump.o := -Werror
-CFLAGS_proc.o := -Werror
-CFLAGS_pvr_bridge_k.o := -Werror
-CFLAGS_pvr_debug.o := -Werror
-CFLAGS_mm.o := -Werror
-CFLAGS_mutex.o := -Werror
-CFLAGS_event.o := -Werror
-CFLAGS_osperproc.o := -Werror
-CFLAGS_buffer_manager.o := -Werror
-CFLAGS_devicemem.o := -Werror
-CFLAGS_deviceclass.o := -Werror
-CFLAGS_handle.o := -Werror
-CFLAGS_hash.o := -Werror
-CFLAGS_metrics.o := -Werror
-CFLAGS_pvrsrv.o := -Werror
-CFLAGS_queue.o := -Werror
-CFLAGS_ra.o := -Werror
-CFLAGS_resman.o := -Werror
-CFLAGS_power.o := -Werror
-CFLAGS_mem.o := -Werror
-CFLAGS_pdump_common.o := -Werror
-CFLAGS_bridged_support.o := -Werror
-CFLAGS_bridged_pvr_bridge.o := -Werror
-CFLAGS_perproc.o := -Werror
-CFLAGS_lists.o := -Werror
-CFLAGS_mem_debug.o := -Werror
-CFLAGS_osfunc_common.o := -Werror
-CFLAGS_refcount.o := -Werror
+CFLAGS_osfunc.o := 
+CFLAGS_mutils.o := 
+CFLAGS_mmap.o := 
+CFLAGS_module.o := 
+CFLAGS_pdump.o := 
+CFLAGS_proc.o := 
+CFLAGS_pvr_bridge_k.o := 
+CFLAGS_pvr_debug.o := 
+CFLAGS_mm.o := 
+CFLAGS_mutex.o := 
+CFLAGS_event.o := 
+CFLAGS_osperproc.o := 
+CFLAGS_buffer_manager.o := 
+CFLAGS_devicemem.o := 
+CFLAGS_deviceclass.o := 
+CFLAGS_handle.o := 
+CFLAGS_hash.o := 
+CFLAGS_metrics.o := 
+CFLAGS_pvrsrv.o := 
+CFLAGS_queue.o := 
+CFLAGS_ra.o := 
+CFLAGS_resman.o := 
+CFLAGS_power.o := 
+CFLAGS_mem.o := 
+CFLAGS_pdump_common.o := 
+CFLAGS_bridged_support.o := 
+CFLAGS_bridged_pvr_bridge.o := 
+CFLAGS_perproc.o := 
+CFLAGS_lists.o := 
+CFLAGS_mem_debug.o := 
+CFLAGS_osfunc_common.o := 
+CFLAGS_refcount.o := 
 endif
 
 # SUPPORT_SGX==1 only
@@ -139,15 +139,15 @@ pvrsrvkm_sgx$(SGXCORE)_$(SGX_CORE_REV)-y += \
 	services4/srvkm/devices/sgx/pb.o
 
 ifneq ($(W),1)
-CFLAGS_bridged_sgx_bridge.o := -Werror
-CFLAGS_sgxinit.o := -Werror
-CFLAGS_sgxpower.o := -Werror
-CFLAGS_sgxreset.o := -Werror
-CFLAGS_sgxutils.o := -Werror
-CFLAGS_sgxkick.o := -Werror
-CFLAGS_sgxtransfer.o := -Werror
-CFLAGS_mmu.o := -Werror
-CFLAGS_pb.o := -Werror
+CFLAGS_bridged_sgx_bridge.o := 
+CFLAGS_sgxinit.o := 
+CFLAGS_sgxpower.o := 
+CFLAGS_sgxreset.o := 
+CFLAGS_sgxutils.o := 
+CFLAGS_sgxkick.o := 
+CFLAGS_sgxtransfer.o := 
+CFLAGS_mmu.o := 
+CFLAGS_pb.o := 
 endif
 
 ifeq ($(SUPPORT_DRI_DRM),1)
