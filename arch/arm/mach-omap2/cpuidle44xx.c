@@ -120,7 +120,7 @@ static struct cpuidle_params cpuidle_params_table[] = {
 	/* C1 - CPUx WFI + MPU ON  + CORE ON */
 	{
 		.exit_latency = 4,	
-		.target_residency = 5, 
+		.target_residency = 4, 
 		.valid = 1,
 	},
 	/* C2 - CPU0 INA + CPU1 INA + MPU INA  + CORE INA */
