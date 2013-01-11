@@ -1309,7 +1309,7 @@ static void __init acclaim_init(void)
 	acclaim_init_charger();
 #endif
 	
-	acclaim_serial_init();
+	//acclaim_serial_init();
 
 	acclaim_twl6030_hsmmc_init(mmc);
 	acclaim_wifi_init();
