@@ -560,14 +560,9 @@ static int omap_rproc_set_lat(struct rproc *rproc, long val)
 {
 	int ret = 0;
 
-	if (!strcmp(rproc->name, "ipu")) {
-#ifdef CONFIG_OMAP_IPU_DEEPIDLE
-		if (val == 40)
-			val = 1500;
-#endif
+	if (!strcmp(rproc->name, "ipu"))
 		pm_qos_update_request(rproc->qos_request, val);
-
-	 } else
+	else
 		ret = omap_pm_set_max_dev_wakeup_lat(rproc->dev,
 						rproc->dev, val);
 

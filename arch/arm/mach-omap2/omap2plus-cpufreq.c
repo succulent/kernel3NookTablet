@@ -469,7 +469,7 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
 	}
 
 	/* FIXME: what's the actual transition time? */
-	policy->cpuinfo.transition_latency = 40 * 1000;
+	policy->cpuinfo.transition_latency = 300 * 1000;
 
 	return 0;
 
@@ -606,3 +606,4 @@ MODULE_DESCRIPTION("cpufreq driver for OMAP2PLUS SOCs");
 MODULE_LICENSE("GPL");
 late_initcall(omap_cpufreq_init);
 module_exit(omap_cpufreq_exit);
+
