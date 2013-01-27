@@ -1192,9 +1192,9 @@ static void acclaim_enable_rtc_gpio(void){
 #define GPIO_WK30		    30
 
 #if defined(CONFIG_USB_EHCI_HCD_OMAP) || defined(CONFIG_USB_OHCI_HCD_OMAP3)
-static const struct usbhs_omap_board_data usbhs_bdata __initconst = {
+struct usbhs_omap_board_data usbhs_bdata __initdata = {
 	.port_mode[0] = OMAP_EHCI_PORT_MODE_PHY,
-	.port_mode[1] = OMAP_USBHS_PORT_MODE_UNUSED,
+	.port_mode[1] = OMAP_OHCI_PORT_MODE_PHY_6PIN_DATSE0,
 	.port_mode[2] = OMAP_USBHS_PORT_MODE_UNUSED,
 	.phy_reset  = false,
 	.reset_gpio_port[0]  = -EINVAL,
@@ -1204,20 +1204,8 @@ static const struct usbhs_omap_board_data usbhs_bdata __initconst = {
 
 static void __init omap4_ehci_ohci_init(void)
 {
-	omap_mux_init_signal("fref_clk3_req.gpio_wk30", \
-		OMAP_PIN_OUTPUT | \
-		OMAP_PIN_OFF_NONE | OMAP_PULL_ENA);
-
-	/* Enable 5V,1A USB power on external HS-USB ports */
-	if (gpio_is_valid(GPIO_WK30)) {
-		gpio_request(GPIO_WK30, "USB POWER GPIO");
-		gpio_direction_output(GPIO_WK30, 1);
-		gpio_set_value(GPIO_WK30, 0);
-	}
-
 	omap_mux_init_signal("usbb2_ulpitll_clk.gpio_157", \
-		OMAP_PIN_OUTPUT | \
-		OMAP_PIN_OFF_NONE);
+		OMAP_PIN_OUTPUT | OMAP_PIN_OFF_NONE);
 
 	/* Power on the ULPI PHY */
 	if (gpio_is_valid(OMAP4_MDM_PWR_EN_GPIO)) {
