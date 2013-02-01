@@ -1019,7 +1019,6 @@ static int rproc_handle_resources(struct rproc *rproc, struct fw_resource *rsc,
 			goto error;
 		}
 	}
-
 	/* post-process pm data types */
 	if (susp_addr)
 		ret = rproc->ops->pm_init(rproc, susp_addr);

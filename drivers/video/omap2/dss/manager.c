@@ -1632,11 +1632,6 @@ static void schedule_completion_irq(void)
 
 	if (mask != dss_cache.comp_irq_enabled) {
 		if (dss_cache.comp_irq_enabled)
-			/* Code paths leading to here are non-trivial, and
-			 * this particular callback does not seem to be
-			 * needing synchronized unregister. To ease our
-			 * lives, just leave it nosync.
-			 */
 			omap_dispc_unregister_isr_nosync(
 				dss_completion_irq_handler,
 				NULL, dss_cache.comp_irq_enabled);

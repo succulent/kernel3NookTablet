@@ -727,9 +727,8 @@ static inline u8 get_achievable_state(u8 available_states, u8 req_min_state,
  * This takes pointer to power_state struct as the function parameter.
  * Program pwrst and logic state of the requested pwrdm.
  */
-
-
-static int _set_pwrdm_state(struct power_state *pwrst, u32 state, u32 logic_state)
+static int _set_pwrdm_state(struct power_state *pwrst, u32 state,
+			    u32 logic_state)
 {
 	u32 als;
 	bool parent_power_domain = false;
@@ -980,7 +979,7 @@ static const struct platform_suspend_ops omap_pm_ops = {
 	.valid		= suspend_valid_only_mem,
 };
 #else
-void omap4_enter_sleep(unsigned int cpu, unsigned int power_state, bool suspend){ return; }
+void omap4_enter_sleep(unsigned int cpu, unsigned int power_state){ return; }
 #endif /* CONFIG_SUSPEND */
 
 /**
@@ -1115,14 +1114,12 @@ static void __init syscontrol_setup_regs(void)
 	v = omap4_ctrl_pad_readl(OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO1_3);
 	v &= ~(OMAP4_LPDDR21_VREF_EN_CA_MASK | OMAP4_LPDDR21_VREF_EN_DQ_MASK);
 	v |= OMAP4_LPDDR21_VREF_AUTO_EN_CA_MASK | OMAP4_LPDDR21_VREF_AUTO_EN_DQ_MASK;
-	omap4_ctrl_pad_writel(v,
-		OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO1_3);
+        omap4_ctrl_pad_writel(v, OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO1_3);
 
 	v = omap4_ctrl_pad_readl(OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO2_3);
 	v &= ~(OMAP4_LPDDR21_VREF_EN_CA_MASK | OMAP4_LPDDR21_VREF_EN_DQ_MASK);
 	v |= OMAP4_LPDDR21_VREF_AUTO_EN_CA_MASK | OMAP4_LPDDR21_VREF_AUTO_EN_DQ_MASK;
-	omap4_ctrl_pad_writel(v,
-		OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO2_3);
+        omap4_ctrl_pad_writel(v, OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_LPDDR2IO2_3);
 
 	syscontrol_lpddr_clk_io_errata(true);
 }

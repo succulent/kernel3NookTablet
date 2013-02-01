@@ -253,22 +253,8 @@ static void musb_otg_notifier_work(struct work_struct *data_notifier_work)
 	struct musb_hdrc_platform_data *pdata = dev->platform_data;
 	struct omap_musb_board_data *data = pdata->board_data;
 	enum usb_xceiv_events xceiv_event = otg_work->xceiv_event;
-	static int last_event = -1;
 
 	kfree(otg_work);
-
-	/* avoid duplicate notifications */
-	if (last_event == xceiv_event) {
-		WARN(1, "Duplicated event(%d): ignored\n", xceiv_event);
-		return;
-	}
-	/* check for incorrect transitions */
-	if ((last_event == USB_EVENT_VBUS && xceiv_event == USB_EVENT_ID) ||
-			(last_event == USB_EVENT_ID  && xceiv_event == USB_EVENT_VBUS)) {
-		WARN(1, "Incorrect transition (%d)->(%d)\n", last_event, xceiv_event);
-	}
-	/* store last event */
-	last_event = xceiv_event;
 
 	switch (xceiv_event) {
 	case USB_EVENT_ID:
@@ -337,10 +323,11 @@ static void musb_otg_notifier_work(struct work_struct *data_notifier_work)
 		}
 
 #endif
-		pm_runtime_get_sync(dev->parent);
 		otg_init(musb->xceiv);
-		pm_runtime_mark_last_busy(dev->parent);
-		pm_runtime_put_autosuspend(dev->parent);
+		break;
+	case USB_EVENT_NO_CONTACT:
+		dev_dbg(musb->controller, "USB no contact\n");
+		musb->is_ac_charger = true;
 		break;
 
 	case USB_EVENT_NONE:
@@ -405,8 +392,8 @@ static int omap2430_musb_init(struct musb *musb)
 
 	status = pm_runtime_get_sync(dev);
 	if (status < 0) {
-		dev_err(dev, "pm_runtime_get_sync FAILED");
-		goto err2;
+		dev_err(dev, "pm_runtime_get_sync FAILED %d\n", status);
+		goto err1;
 	}
 
 	/* Set OTG_INTERFSEL to ULPI for correct charger detection.

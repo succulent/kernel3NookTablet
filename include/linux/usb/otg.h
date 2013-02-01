@@ -40,6 +40,7 @@ enum usb_xceiv_events {
 	USB_EVENT_VBUS,         /* vbus valid event */
 	USB_EVENT_ID,           /* id was grounded */
 	USB_EVENT_CHARGER,      /* usb dedicated charger */
+	USB_EVENT_NO_CONTACT,   /* usb no contact */
 	USB_EVENT_ENUMERATED,   /* gadget driver enumerated */
 };
 
@@ -114,9 +115,9 @@ struct otg_transceiver {
 
 	/* start or continue HNP role switch */
 	int	(*start_hnp)(struct otg_transceiver *otg);
-	
-	/* start or continue HNP role switch */
-	int     (*get_link_status)(struct otg_transceiver *otg);
+
+	/* get current status of the link */
+	int	(*get_link_status)(struct otg_transceiver *otg);
 
 
 };
@@ -255,6 +256,19 @@ otg_start_srp(struct otg_transceiver *otg)
 	return otg->start_srp(otg);
 }
 
+/* */
+static inline int otg_get_link_status(struct otg_transceiver *otg)
+{
+	if ((otg != NULL) && (otg->get_link_status != NULL))
+	{
+		return otg->get_link_status(otg);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 /* notifiers */
 static inline int
 otg_register_notifier(struct otg_transceiver *otg, struct notifier_block *nb)
@@ -270,15 +284,5 @@ otg_unregister_notifier(struct otg_transceiver *otg, struct notifier_block *nb)
 
 /* for OTG controller drivers (and maybe other stuff) */
 extern int usb_bus_start_enum(struct usb_bus *bus, unsigned port_num);
-
-/* notifiers */
-static inline int
-otg_get_link_status(struct otg_transceiver *otg)
-{
-        if (otg->get_link_status != NULL)
-                return otg->get_link_status(otg);
-        else
-                return 0;
-}
 
 #endif /* __LINUX_USB_OTG_H */

@@ -606,4 +606,3 @@ MODULE_DESCRIPTION("cpufreq driver for OMAP2PLUS SOCs");
 MODULE_LICENSE("GPL");
 late_initcall(omap_cpufreq_init);
 module_exit(omap_cpufreq_exit);
-
