@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Linux/arm 3.0.62 Kernel Configuration
+# Linux/arm 3.0.63 Kernel Configuration
 #
 CONFIG_ARM=y
 CONFIG_HAVE_PWM=y
@@ -1336,6 +1336,7 @@ CONFIG_UNIX98_PTYS=y
 # CONFIG_TRACE_SINK is not set
 CONFIG_DEVMEM=y
 CONFIG_DEVKMEM=y
+CONFIG_FRANDOM=y
 
 #
 # Serial drivers
