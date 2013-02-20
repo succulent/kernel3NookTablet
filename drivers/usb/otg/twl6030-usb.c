@@ -606,12 +606,10 @@ static int twl6030_set_hz_mode(struct otg_transceiver *x, bool enabled)
 
 static int twl6030_set_vbus(struct otg_transceiver *x, bool enabled)
 {
-#ifndef CONFIG_CHARGER_BQ2419x
 	struct twl6030_usb *twl = xceiv_to_twl(x);
 
 	twl->vbus_enable = enabled;
 	schedule_work(&twl->set_vbus_work);
-#endif
 	return 0;
 }
 
