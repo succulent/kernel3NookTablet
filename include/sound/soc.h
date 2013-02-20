@@ -760,6 +760,7 @@ struct snd_soc_dai_link {
 	unsigned int no_host_mode:2;
 	/* DAI link active */
 	unsigned int active;
+
 	/* codec/machine specific init - e.g. add machine controls */
 	int (*init)(struct snd_soc_pcm_runtime *rtd);
 
