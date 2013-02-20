@@ -3095,6 +3095,7 @@ wl_cfg80211_set_power_mgmt(struct wiphy *wiphy, struct net_device *dev,
 	s32 err = 0;
 	struct wl_priv *wl = wiphy_priv(wiphy);
 	dhd_pub_t *dhd =  (dhd_pub_t *)(wl->pub);
+
 	CHECK_SYS_UP(wl);
 
 	WL_DBG(("Enter : power save %s\n", (enabled ? "enable" : "disable")));
