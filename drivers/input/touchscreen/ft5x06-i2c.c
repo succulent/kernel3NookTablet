@@ -6529,11 +6529,10 @@ static int __devinit ft5x06_probe(struct i2c_client *client, const struct i2c_de
 	switch(ts->info.fw_ver)
 	{
 	case 0x0b:
-		{
-			ts->platform_data->flags = FLIP_DATA_FLAG | REVERSE_X_FLAG;
-			ts->platform_data->maxx = 768;
-		}
+		ts->platform_data->maxy = 768;
 		break;
+	default :  //stock firmware
+		ts->platform_data->flags = REVERSE_X_FLAG | REVERSE_Y_FLAG ;
 	}
 
 	/* Switch off the controller till someone starts using it */
