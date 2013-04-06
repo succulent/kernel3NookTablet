@@ -86,7 +86,6 @@
 #include "prm-regbits-44xx.h"
 #include "prm44xx.h"
 #include <linux/skbuff.h>
-#include <plat/omap-serial.h>
 
 #ifdef CONFIG_INPUT_KXTF9
 #define KXTF9_DEVICE_ID                 "kxtf9"
@@ -602,76 +601,89 @@ static struct omap2_hsmmc_info mmc[] = {
 	{
 		.mmc		= 2,
 		.caps		= MMC_CAP_4_BIT_DATA 
-		| MMC_CAP_8_BIT_DATA 
-		| MMC_CAP_1_8V_DDR,
+				| MMC_CAP_8_BIT_DATA 
+				| MMC_CAP_1_8V_DDR,
 		.gpio_cd	= -EINVAL,
 		.gpio_wp	= -EINVAL,
 		.ocr_mask	= MMC_VDD_29_30,
 		.nonremovable	= true,
 		.no_off_init	= true,
-//#ifdef CONFIG_PM_RUNTIME
-//		.power_saving	= true,
-//#endif
 	},
 	{
 		.mmc		= 1,
 		.caps		= MMC_CAP_4_BIT_DATA 
-		| MMC_CAP_8_BIT_DATA
-		| MMC_CAP_1_8V_DDR,
-		.gpio_cd	= -EINVAL,
+				| MMC_CAP_8_BIT_DATA
+				| MMC_CAP_1_8V_DDR,
 		.gpio_wp	= -EINVAL,
-		.nonremovable 	= false,
-//#ifdef CONFIG_PM_RUNTIME
-//		.power_saving	= true,
-//#endif
 	},
 	{
-		.name           = "wl1271",
 		.mmc		= 3,
-		.caps		= MMC_CAP_4_BIT_DATA
-		| MMC_CAP_POWER_OFF_CARD,
+		.caps		= MMC_CAP_4_BIT_DATA 
+				| MMC_CAP_POWER_OFF_CARD,
 		.gpio_cd	= -EINVAL,
- 		.gpio_wp        = -EINVAL,
+		.gpio_wp	= -EINVAL,
 		.ocr_mask	= MMC_VDD_165_195,
-		.nonremovable 	= true,
+		.nonremovable	= true,
 	},
 	{}      /* Terminator */
 };
 
-/* External SD-card */
-static struct regulator_consumer_supply acclaim_vmmc_supply[] = {
- 	{
-		.supply = "vmmc",
- 		.dev_name = "omap_hsmmc.0",
- 	},
-};
-
-static struct regulator_consumer_supply acclaim_vwlan_supply[] = {
+static struct regulator_consumer_supply acclaim_vaux_supply[] = {
 	{
-		.supply = "vwlan",
+		.supply = "vmmc",
+		.dev_name = "omap_hsmmc.1",
 	},
 };
 
-static int wl12xx_set_power(struct device *dev, int slot, int on, int vdd)
-{
-	printk(KERN_WARNING"%s: %d\n", __func__, on);
-	if (on) {
-		gpio_set_value(GPIO_WIFI_PWEN, on);
-		udelay(800);
-		gpio_set_value(GPIO_WIFI_PMENA, on);
-		mdelay(70);
-	} else {
-		gpio_set_value(GPIO_WIFI_PMENA, on);
-		gpio_set_value(GPIO_WIFI_PWEN, on);
-	}
-	return 0;
-}
+/* External SD-card */
+static struct regulator_consumer_supply acclaim_vmmc_supply[] = {
+	{
+		.supply = "vmmc",
+		.dev_name = "omap_hsmmc.0",
+	},
+};
+
+static struct regulator_consumer_supply acclaim_vcxio_supply[] = {
+	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dss"),
+	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi1"),
+};
+
+static struct regulator_consumer_supply acclaim_vmmc5_supply = {
+	.supply = "vmmc",
+	.dev_name = "omap_hsmmc.2",
+};
+
+static struct regulator_init_data acclaim_vmmc5 = {
+	.constraints = {
+		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
+	},
+	.num_consumer_supplies = 1,
+	.consumer_supplies = &acclaim_vmmc5_supply,
+};
+
+static struct fixed_voltage_config acclaim_vwlan = {
+	.supply_name		= "vwl1271",
+	.microvolts		= 1800000, /* 1.8V */
+	.gpio			= GPIO_WIFI_PMENA,
+	.startup_delay		= 70000, /* 70msec */
+	.enable_high		= 1,
+	.enabled_at_boot	= 0,
+	.init_data		= &acclaim_vmmc5,
+};
+
+static struct platform_device acclaim_vwlan_device = {
+	.name		= "reg-fixed-voltage",
+	.id		= 1,
+	.dev = {
+		.platform_data = &acclaim_vwlan,
+	},
+};
 
 static int omap4_twl6030_hsmmc_late_init(struct device *dev)
 {
 	int ret = 0;
-	struct platform_device *pdev
-		= container_of(dev, struct platform_device, dev);
+	struct platform_device *pdev = container_of(dev,
+				struct platform_device, dev);
 	struct omap_mmc_platform_data *pdata = dev->platform_data;
 
 	
@@ -682,14 +694,9 @@ static int omap4_twl6030_hsmmc_late_init(struct device *dev)
 			pr_err("Failed configuring MMC1 card detect\n");
 		}
 		pdata->slots[0].card_detect_irq = TWL6030_IRQ_BASE +
-			MMCDETECT_INTR_OFFSET;
+						MMCDETECT_INTR_OFFSET;
 		pdata->slots[0].card_detect = twl6030_mmc_card_detect;
 	}
-	if (pdev->id == 2) {
-		ret = 0;
-		pdata->slots[0].mmc_data.built_in = 1;
-	}
-
 	return ret;
 }
 
@@ -723,14 +730,21 @@ static struct regulator_init_data acclaim_vaux1 = {
 		.apply_uV		= true,
 		.valid_modes_mask	= REGULATOR_MODE_NORMAL
 					| REGULATOR_MODE_STANDBY,
-		.valid_ops_mask	 = REGULATOR_CHANGE_VOLTAGE
+		.valid_ops_mask	 	= REGULATOR_CHANGE_VOLTAGE
 					| REGULATOR_CHANGE_MODE
 					| REGULATOR_CHANGE_STATUS,
+		.always_on	= true,
 		.state_mem = {
 			.disabled	= true,
 		},
-		.always_on	= true,
+		.initial_state          = PM_SUSPEND_MEM,
 	},
+};
+
+static struct regulator_consumer_supply acclaim_vwlan_supply[] = {
+        {
+                .supply = "vwlan",
+        },
 };
 
 static struct regulator_init_data acclaim_vaux3 = {
@@ -740,10 +754,11 @@ static struct regulator_init_data acclaim_vaux3 = {
 		.apply_uV		= true,
 		.valid_modes_mask	= REGULATOR_MODE_NORMAL
 					| REGULATOR_MODE_STANDBY,
-		.valid_ops_mask	 = REGULATOR_CHANGE_VOLTAGE
+		.valid_ops_mask	 	= REGULATOR_CHANGE_VOLTAGE
 					| REGULATOR_CHANGE_MODE
 					| REGULATOR_CHANGE_STATUS,
 		.state_mem = {
+                        .enabled        = false,
 			.disabled	= true,
 		},
 		.always_on	= true,
@@ -759,10 +774,11 @@ static struct regulator_init_data acclaim_vmmc = {
 		.apply_uV		= true,
 		.valid_modes_mask	= REGULATOR_MODE_NORMAL
 					| REGULATOR_MODE_STANDBY,
-		.valid_ops_mask	 = REGULATOR_CHANGE_VOLTAGE
+		.valid_ops_mask	 	= REGULATOR_CHANGE_VOLTAGE
 					| REGULATOR_CHANGE_MODE
 					| REGULATOR_CHANGE_STATUS,
 		.state_mem = {
+                        .enabled        = false,
 			.disabled	= true,
 		},
 	},
@@ -777,13 +793,13 @@ static struct regulator_init_data acclaim_vpp = {
 		.apply_uV		= true,
 		.valid_modes_mask	= REGULATOR_MODE_NORMAL
 					| REGULATOR_MODE_STANDBY,
-		.valid_ops_mask	 = REGULATOR_CHANGE_VOLTAGE
+		.valid_ops_mask	 	= REGULATOR_CHANGE_VOLTAGE
 					| REGULATOR_CHANGE_MODE
 					| REGULATOR_CHANGE_STATUS,
 		.state_mem = {
+                        .enabled        = false,
 			.disabled	= true,
 		},
-		.initial_state          = PM_SUSPEND_MEM,
 	},
 };
 
@@ -791,15 +807,14 @@ static struct regulator_init_data acclaim_vana = {
 	.constraints = {
 		.min_uV			= 2100000,
 		.max_uV			= 2100000,
-		//.apply_uV		= true,
 		.valid_modes_mask	= REGULATOR_MODE_NORMAL
 					| REGULATOR_MODE_STANDBY,
-		.valid_ops_mask	 = REGULATOR_CHANGE_MODE
+		.valid_ops_mask	 	= REGULATOR_CHANGE_MODE
 					| REGULATOR_CHANGE_STATUS,
 		.state_mem = {
+                        .enabled        = false,
 			.disabled	= true,
 		},
-		.initial_state          = PM_SUSPEND_MEM,
 	},
 };
 
@@ -807,17 +822,18 @@ static struct regulator_init_data acclaim_vcxio = {
 	.constraints = {
 		.min_uV			= 1800000,
 		.max_uV			= 1800000,
-		//.apply_uV		= true,
 		.valid_modes_mask	= REGULATOR_MODE_NORMAL
-		| REGULATOR_MODE_STANDBY,
-		.valid_ops_mask	 = REGULATOR_CHANGE_MODE
-		| REGULATOR_CHANGE_STATUS,
+					| REGULATOR_MODE_STANDBY,
+		.valid_ops_mask	 	= REGULATOR_CHANGE_MODE
+					| REGULATOR_CHANGE_STATUS,
+		.always_on	= true,
 		.state_mem = {
 			.disabled	= true,
 		},
 		.initial_state          = PM_SUSPEND_MEM,
-		.always_on	= true,
 	},
+	.num_consumer_supplies	= ARRAY_SIZE(acclaim_vcxio_supply),
+	.consumer_supplies	= acclaim_vcxio_supply,
 };
 
 
@@ -829,25 +845,22 @@ static struct regulator_init_data acclaim_vusb = {
 	.constraints = {
 		.min_uV			= 3300000,
 		.max_uV			= 3300000,
-		//.apply_uV		= true,
 		.valid_modes_mask	= REGULATOR_MODE_NORMAL
-		| REGULATOR_MODE_STANDBY,
-		.valid_ops_mask	 =	REGULATOR_CHANGE_MODE
-		| REGULATOR_CHANGE_STATUS,
+					| REGULATOR_MODE_STANDBY,
+		.valid_ops_mask	 	= REGULATOR_CHANGE_MODE
+					| REGULATOR_CHANGE_STATUS,
 		.state_mem = {
 			.disabled	= true,
 		},
 		.initial_state          = PM_SUSPEND_MEM,
 	},
-	.num_consumer_supplies  = ARRAY_SIZE(vusb_supply),
-	.consumer_supplies      = vusb_supply,
 };
 
 static struct regulator_init_data acclaim_clk32kg = {
 	.constraints = {
 		.valid_modes_mask	= REGULATOR_MODE_NORMAL,
 		.valid_ops_mask		= REGULATOR_CHANGE_STATUS,
-		.always_on	= true,
+		.always_on		= true,
 	},
 };
 
@@ -1107,73 +1120,58 @@ static inline void acclaim_serial_init(void)
 		ARRAY_SIZE(acclaim_uart1_pads), &acclaim_uart_info);
 }
 
+static void omap4_acclaim_wifi_mux_init(void)
+{
+	omap_mux_init_gpio(GPIO_WIFI_IRQ, OMAP_PIN_INPUT |
+				OMAP_PIN_OFF_WAKEUPENABLE);
+	omap_mux_init_gpio(GPIO_WIFI_PMENA, OMAP_PIN_OUTPUT);
+        omap_mux_init_gpio(GPIO_WIFI_PWEN, OMAP_PIN_OUTPUT);
+	omap_mux_init_signal("uart2_cts.sdmmc3_clk",
+				OMAP_MUX_MODE1 | OMAP_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("uart2_rts.sdmmc3_cmd",
+				OMAP_MUX_MODE1 | OMAP_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("uart2_rx.sdmmc3_dat0",
+				OMAP_MUX_MODE1 | OMAP_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("uart2_tx.sdmmc3_dat1",
+				OMAP_MUX_MODE1 | OMAP_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("abe_mcbsp1_dx.sdmmc3_dat2",
+				OMAP_MUX_MODE1 | OMAP_PIN_INPUT_PULLUP);
+	omap_mux_init_signal("abe_mcbsp1_fsx.sdmmc3_dat3",
+				OMAP_MUX_MODE1 | OMAP_PIN_INPUT_PULLUP);
+}
+
+static void wlan_set_power(bool enable) {
+	printk("%s(%i)\n",__func__,enable);
+	gpio_direction_output(GPIO_WIFI_PWEN, enable);
+	mdelay(100);
+}
+
 static struct wl12xx_platform_data omap4_acclaim_wlan_data __initdata = {
 	.irq = OMAP_GPIO_IRQ(GPIO_WIFI_IRQ),
-	.board_ref_clock = WL12XX_REFCLOCK_38
+	.board_ref_clock = WL12XX_REFCLOCK_38,
+	.board_tcxo_clock = WL12XX_TCXOCLOCK_38_4,
+	.set_power = wlan_set_power,
 };
 
-void config_wlan_mux(void)
-{
-	omap_mux_init_gpio(GPIO_WIFI_IRQ, 
-			   OMAP_PIN_INPUT | OMAP_PIN_OFF_WAKEUPENABLE);
-	omap_mux_init_gpio(GPIO_WIFI_PMENA, OMAP_PIN_OUTPUT);
-}
 
 static void __init acclaim_wifi_init(void)
 {
-	struct device *dev;
-	struct omap_mmc_platform_data *pdata;
-	int ret;
-	printk(KERN_WARNING"%s: start\n", __func__);
-	
-	ret = gpio_request(GPIO_WIFI_PMENA, "wifi_pmena");
-	if (ret < 0) {
-		pr_err("%s: can't reserve GPIO: %d\n", __func__,
-		       GPIO_WIFI_PMENA);
-		goto out;
-	}
-	gpio_direction_output(GPIO_WIFI_PMENA, 0);
-	gpio_export(GPIO_WIFI_PMENA, true);
-      
-	ret = gpio_request(GPIO_WIFI_PWEN, "wifi_pwen");
-	if (ret < 0) {
-		pr_err("%s: can't reserve GPIO: %d\n", __func__,
-		       GPIO_WIFI_PWEN);
-		goto out;
-	}
-	gpio_direction_output(GPIO_WIFI_PWEN, 0);
-	gpio_export(GPIO_WIFI_PWEN, true);
+	int status = 0;
 
-	ret = gpio_request(GPIO_WIFI_IRQ, "wifi_irq");
-	if (ret < 0) {
-		printk(KERN_ERR "%s: can't reserve GPIO: %d\n", __func__,
-		       GPIO_WIFI_IRQ);
-		goto out;
-	}
-	gpio_direction_input(GPIO_WIFI_IRQ);
+	omap4_acclaim_wifi_mux_init();
 
-	dev = mmc[2].dev;
-	if (!dev) {
-	      
-		pr_err("wl12xx mmc device initialization failed\n");
-		goto out;
+	status = gpio_request(GPIO_WIFI_PWEN, "wifi_pwen");
+	if (unlikely(status < 0)) {
+		pr_err("Error requesting WIFI power-en gpio (%d)\n", GPIO_WIFI_PWEN);
+		return;
 	}
- 
-	pdata = dev->platform_data;
-	if (!pdata) {
-		pr_err("Platfrom data of wl12xx device not set\n");
-		goto out;
-	}
-   
-	pdata->slots[0].set_power = wl12xx_set_power;
-	config_wlan_mux ();
+	/* Needed for mmc2 initialization */
+	gpio_direction_output(GPIO_WIFI_PWEN, 1);
 
 	if (wl12xx_set_platform_data(&omap4_acclaim_wlan_data))
-		pr_err("Error setting wl12xx data\n"); 
- out:
-	return;
+		pr_err("Error setting wl12xx data\n");
+	platform_device_register(&acclaim_vwlan_device);
 }
-
 
 static void acclaim_enable_rtc_gpio(void){
 	/* To access twl registers we enable gpio6
